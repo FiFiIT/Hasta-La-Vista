@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import DateInput from "../common/DateInput";
-import TimeInput from "../common/TimeInput";
-import Korty from "../common/Korty";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import React, { useState, useRef } from "react";
+import SquashForm from "./SquashForm";
+import * as squashApi from "./../../api/squashApi";
+import SquashSearching from "./SquashSearching";
 
 const Squash = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState("18:00");
   const [endTime, setEndTime] = useState("19:00");
+  const [errors, setErrors] = useState({});
+  const [freeCourts, setFreeCourts] = useState({});
+  const [isSearching, setIsSearching] = useState(false);
+  const searchId = useRef("");
 
   const handleDateChange = date => {
     const today = new Date().setHours(0, 0, 0, 0);
@@ -26,64 +29,79 @@ const Squash = () => {
     setEndTime(time);
   };
 
+  function validateMinutes(time, name) {
+    const minutes = parseInt(time.slice(-2));
+    if (minutes !== 0 && minutes !== 30) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: "Minutes needs to be 00 or 30"
+      }));
+    }
+  }
+
   const formIsValid = () => {
-    return 0 === 0;
+    setErrors({});
+    validateMinutes(startTime, "sTime");
+    validateMinutes(endTime, "eTime");
+
+    if (startTime >= endTime) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        difference: "Start Time must be set before End Time"
+      }));
+    }
+
+    return Object.keys(errors).length === 0;
   };
 
   const handleOnSzukaj = event => {
     event.preventDefault();
+
+    if (!formIsValid()) {
+      return;
+    }
+
+    setIsSearching(true);
+    searchId.current = setInterval(() => searchForFreeCourts(), 10000);
+    console.log("New interval started: " + searchId.current);
+  };
+
+  const searchForFreeCourts = () => {
+    squashApi
+      .getFreeCourts(startDate, startTime, endTime)
+      .then(allCourts => {
+        console.log("We did it");
+        if (allCourts.length > 0) {
+          console.log("Clearing interval: " + searchId.current);
+          clearInterval(searchId.current);
+        }
+        setFreeCourts(allCourts);
+      })
+      .catch(error => {
+        console.log("Error: " + error);
+      });
   };
 
   return (
-    <form onSubmit={handleOnSzukaj}>
-      <Container>
-        <Row>
-          <Col>
-            <h4>Rezerwacja kortów do Squosha</h4>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <DateInput
-              label="Na kiedy:"
-              name="rezerwacja"
-              startDate={startDate}
-              handleDateChange={handleDateChange}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col md="auto">
-            <TimeInput
-              name="od"
-              label="Szukaj od:"
-              startTime={startTime}
-              handleTimeChange={handleStartTimeChange}
-            />
-          </Col>
-          <Col>
-            <TimeInput
-              name="od"
-              label="Szukaj do:"
-              startTime={endTime}
-              handleTimeChange={handleEndTimeChange}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Korty />
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Button variant="primary" type="submit">
-              Szukaj
-            </Button>
-          </Col>
-        </Row>
-      </Container>
-    </form>
+    <>
+      {isSearching ? (
+        <>
+          <h2>Searching for Courst</h2>
+          {freeCourts.length > 0 && <SquashSearching freeCourts={freeCourts} />}
+        </>
+      ) : (
+        <SquashForm
+          handleOnSzukaj={handleOnSzukaj}
+          handleDateChange={handleDateChange}
+          handleStartTimeChange={handleStartTimeChange}
+          handleEndTimeChange={handleEndTimeChange}
+          startDate={startDate}
+          startTime={startTime}
+          endTime={endTime}
+          errors={errors}
+        />
+      )}
+    </>
   );
 };
 

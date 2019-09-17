@@ -6,7 +6,7 @@ import HomePage from "../components/home/HomePage.js";
 import Squash from "./squash/Squash";
 import Badminton from "./badminton/Badminton";
 
-function App() {
+const App = () => {
   return (
     <>
       <Header />
@@ -17,6 +17,6 @@ function App() {
       </Switch>
     </>
   );
-}
+};
 
 export default App;

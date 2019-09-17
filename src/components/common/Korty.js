@@ -10,7 +10,7 @@ const Korty = ({ quantity }) => {
       <label htmlFor={tab[0]}>Które korty wykluczyć?</label>
       <div className="field">
         {tab.map(n => (
-          <Kort {...n} />
+          <Kort key={n.number} {...n} />
         ))}
       </div>
     </div>
