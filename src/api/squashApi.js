@@ -1,5 +1,5 @@
 import { handleResponse, handleError } from "./apiUtils";
-const baseUrl = "http://localhost:5000/squash/freeCourts";
+const baseUrl = "http://localhost:59897/squash/freeCourts";
 
 export function getFreeCourts(startDate, startTime, endTime) {
   const request = baseUrl + "/" + startTime + "/" + endTime + "/60";
