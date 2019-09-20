@@ -10,7 +10,7 @@ const Squash = () => {
   const [errors, setErrors] = useState({});
   const [freeCourts, setFreeCourts] = useState({});
   const [isSearching, setIsSearching] = useState(false);
-  const searchId = useRef("");
+  const intervalId = useRef();
 
   const handleDateChange = date => {
     const today = new Date().setHours(0, 0, 0, 0);
@@ -62,8 +62,8 @@ const Squash = () => {
     }
 
     setIsSearching(true);
-    searchId.current = setInterval(() => searchForFreeCourts(), 10000);
-    console.log("New interval started: " + searchId.current);
+    intervalId.current = setInterval(() => searchForFreeCourts(), 5000);
+    console.log("New interval started: " + intervalId.current);
   };
 
   const searchForFreeCourts = () => {
@@ -72,8 +72,8 @@ const Squash = () => {
       .then(allCourts => {
         console.log("We did it");
         if (allCourts.length > 0) {
-          console.log("Clearing interval: " + searchId.current);
-          clearInterval(searchId.current);
+          console.log("Clearing interval: " + intervalId.current);
+          clearInterval(intervalId.current);
         }
         setFreeCourts(allCourts);
       })
@@ -86,7 +86,7 @@ const Squash = () => {
     <>
       {isSearching ? (
         <>
-          <h2>Searching for Courst</h2>
+          <p>Searching for Courst</p>
           {freeCourts.length > 0 && <SquashSearching freeCourts={freeCourts} />}
         </>
       ) : (
