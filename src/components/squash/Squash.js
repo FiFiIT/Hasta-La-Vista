@@ -86,7 +86,7 @@ const Squash = () => {
     <>
       {isSearching ? (
         <>
-          <p>Searching for Courst</p>
+          <p>Szukam wolnych kortow...</p>
           {freeCourts.length > 0 && <SquashSearching freeCourts={freeCourts} />}
         </>
       ) : (
